@@ -67,7 +67,15 @@ docker run -d -p 8083:8080 hilltopconsultancy/color-app:green
 docker run -d -p 8084:8080 hilltopconsultancy/color-app:orange
 docker run -d -p 8085:8080 hilltopconsultancy/color-app:pink
 ```
+---
 
+## **📌 Pushing to Docker Hub**
+To push your images to Docker Hub:
+```sh
+docker push <UserName>/<Repo>:red
+```
+
+Now, the images can be pulled and deployed anywhere.
 ---
 
 ## **📌 Accessing the Application**
@@ -199,16 +207,6 @@ kubectl delete deployment color-app-red
 kubectl delete service color-app-service
 kubectl delete configmap color-config
 ```
-
----
-
-## **📌 Pushing to Docker Hub**
-To push your images to Docker Hub:
-```sh
-docker push <UserName>/<Repo>:red
-```
-
-Now, the images can be pulled and deployed anywhere.
 
 ---
 
