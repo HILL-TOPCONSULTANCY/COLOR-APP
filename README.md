@@ -1,12 +1,52 @@
 # Hilltop Consultancy Color Display Application
 
-This is a simple **Node.js web application** that dynamically displays a webpage with a customizable background color. The background color is set during the **Docker build process** using the `COLOR` build argument.
-
-Each version of the application represents a **different color**, and multiple versions can run simultaneously using Docker.
+This is a simple **Node.js web application** that dynamically displays a webpage with a customizable background color. The background color can be set using an environment variable or passed during the **Docker build process** using the `COLOR` build argument.
 
 ---
 
-## **📌 Prerequisites**
+## **📌 Infrastructure Requirements (Before Docker/Kubernetes)**
+To run the application manually, you will need to:
+
+1. **Create a virtual machine or cloud instance** (e.g., AWS EC2, Azure VM, GCP Compute Engine)
+2. Select an OS image like **Ubuntu 20.04** or **Amazon Linux 2**
+3. Choose at least **t2.micro** (1 vCPU, 1GB RAM) for testing
+4. Open inbound ports **8080**, or any host port you’ll map
+5. SSH into the instance and install required tools:
+
+```sh
+sudo apt update && sudo apt install -y git curl nodejs npm
+```
+
+6. Clone the repo and run the app:
+```sh
+git clone https://github.com/HILL-TOPCONSULTANCY/COLOR-APP.git
+cd COLOR-APP
+```
+7. Install npm dependencies and libraries
+```sh
+npm install
+```
+
+8. To run with default red background:
+```sh
+npm start
+```
+
+9. To customize color (e.g., blue):
+```sh
+COLOR=blue npm start
+```
+
+10. To test and build:
+```sh
+npm test
+```
+
+Access via: `http://localhost:8080`
+
+---
+
+## **📌 Prerequisites for Docker/Kubernetes**
 Ensure you have the following installed on your system:
 - **Docker** ([Download Docker](https://www.docker.com/get-started))
 - **Git** (Optional, for cloning the repository)
@@ -20,33 +60,23 @@ Clone this repository to your local machine:
 git clone https://github.com/HILL-TOPCONSULTANCY/COLOR-APP.git
 cd COLOR-APP
 ```
+
 ---
 
 ## **📌 Understanding Port Mapping in Docker**
-When running the application using Docker, **the application inside the container always runs on port `8080`**.  
-However, we use **port mapping** (`-p <host-port>:8080`) to expose different color versions on different **host ports**.
+When running the application using Docker, **the app runs inside the container on port `8080`**. You expose it to the host with:
 
-For example:
 ```sh
 docker run -d -p 8081:8080 hilltopconsultancy/color-app:red
 ```
-This maps **port 8080 inside the container** to **port 8081 on the host**.
-
-Thus, even though the logs show:
-```
-Server is running on http://localhost:8080
-```
-You access the application via:
+Access it on your host at:
 ```
 http://localhost:8081
 ```
-because **8081 is mapped to 8080**.
 
 ---
 
 ## **📌 Building Docker Images with Different Colors**
-Build different versions using the `--build-arg COLOR=<color>` flag:
-
 ```sh
 docker build --no-cache --build-arg COLOR=red -t hilltopconsultancy/color-app:red .
 docker build --no-cache --build-arg COLOR=blue -t hilltopconsultancy/color-app:blue .
@@ -58,8 +88,6 @@ docker build --no-cache --build-arg COLOR=pink -t hilltopconsultancy/color-app:p
 ---
 
 ## **📌 Running the Application with Docker**
-Run different colors on different **host ports**:
-
 ```sh
 docker run -d -p 8081:8080 hilltopconsultancy/color-app:red
 docker run -d -p 8082:8080 hilltopconsultancy/color-app:blue
@@ -67,20 +95,17 @@ docker run -d -p 8083:8080 hilltopconsultancy/color-app:green
 docker run -d -p 8084:8080 hilltopconsultancy/color-app:orange
 docker run -d -p 8085:8080 hilltopconsultancy/color-app:pink
 ```
+
 ---
 
 ## **📌 Pushing to Docker Hub**
-To push your images to Docker Hub:
 ```sh
 docker push <UserName>/<Repo>:red
 ```
 
-Now, the images can be pulled and deployed anywhere.
 ---
 
 ## **📌 Accessing the Application**
-Open a browser and visit the following URLs:
-
 | Color  | URL |
 |--------|--------------------------------|
 | **Red** | [http://localhost:8081](http://localhost:8081) |
@@ -92,13 +117,10 @@ Open a browser and visit the following URLs:
 ---
 
 ## **📌 Deploying to Kubernetes**
-To deploy the **red color version** in Kubernetes, we will use:
-1. **A ConfigMap** to store the `COLOR` variable
-2. **A Deployment** to run the application
-3. **A NodePort Service** to expose the application
+To deploy the **red color version** in Kubernetes:
 
 ### **1️⃣ Create a ConfigMap for the Red Color**
-Create a file called **`color-configmap.yaml`**:
+`color-configmap.yaml`
 ```yaml
 apiVersion: v1
 kind: ConfigMap
@@ -107,7 +129,6 @@ metadata:
 data:
   COLOR: "red"
 ```
-Apply it to the cluster:
 ```sh
 kubectl apply -f color-configmap.yaml
 ```
@@ -115,7 +136,7 @@ kubectl apply -f color-configmap.yaml
 ---
 
 ### **2️⃣ Create a Deployment for the Red Version**
-Create a file called **`color-deployment.yaml`**:
+`color-deployment.yaml`
 ```yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -133,14 +154,13 @@ spec:
     spec:
       containers:
       - name: color-app
-        image: hilltopconsultancy/color-app:red  # Pull from Docker Hub
+        image: hilltopconsultancy/color-app:red
         ports:
         - containerPort: 8080
         envFrom:
         - configMapRef:
             name: color-config
 ```
-Apply it to the cluster:
 ```sh
 kubectl apply -f color-deployment.yaml
 ```
@@ -148,7 +168,7 @@ kubectl apply -f color-deployment.yaml
 ---
 
 ### **3️⃣ Create a NodePort Service to Expose the Application**
-Create a file called **`color-service.yaml`**:
+`color-service.yaml`
 ```yaml
 apiVersion: v1
 kind: Service
@@ -162,9 +182,8 @@ spec:
     - protocol: TCP
       port: 8080
       targetPort: 8080
-      nodePort: 30080  # Exposed on NodePort 30080
+      nodePort: 30080
 ```
-Apply it to the cluster:
 ```sh
 kubectl apply -f color-service.yaml
 ```
@@ -172,11 +191,8 @@ kubectl apply -f color-service.yaml
 ---
 
 ## **📌 Accessing the Kubernetes Deployment**
-Once the application is deployed, get the **Minikube or cluster IP**:
-```sh
-minikube ip  # If using Minikube
-```
-Then access it via:
+
+Access via:
 ```
 http://<NODE_IP>:30080
 ```
@@ -184,7 +200,6 @@ http://<NODE_IP>:30080
 ---
 
 ## **📌 Viewing Logs**
-To see logs of the running Kubernetes Pods:
 ```sh
 kubectl get pods 
 kubectl logs -f <POD_NAME>
@@ -193,7 +208,6 @@ kubectl logs -f <POD_NAME>
 ---
 
 ## **📌 Scaling the Deployment**
-To scale the **red color application** to 5 instances:
 ```sh
 kubectl scale deployment color-app-red --replicas=5
 ```
@@ -201,7 +215,6 @@ kubectl scale deployment color-app-red --replicas=5
 ---
 
 ## **📌 Deleting the Deployment**
-To remove the application:
 ```sh
 kubectl delete deployment color-app-red
 kubectl delete service color-app-service
@@ -212,13 +225,9 @@ kubectl delete configmap color-config
 
 ## **📌 Conclusion**
 This guide covers:
+- **Manual setup and running on cloud VMs**
+- **Running and testing the app using `npm`**
 - **Building and running the application with Docker**
-- **Understanding port mapping (`-p <host-port>:8080`)**
-- **Deploying the red version on Kubernetes using ConfigMaps, Deployments, and NodePort Services**
-- **Scaling and managing the deployment**
-- **Pushing and pulling images from Docker Hub**
+- **Deploying versions to Kubernetes with ConfigMaps and NodePorts**
+- **Scaling, logging, and managing deployments**
 
-🚀 Now you can **deploy and run multiple color variations of the app on Kubernetes!** 🎨🔥  
-For questions, feel free to **reach out** or contribute to this project.
-
----

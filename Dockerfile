@@ -1,25 +1,27 @@
-# Use the official Node.js image
+# Use the official Node.js 16 LTS image
 FROM node:16
 
-# Set the working directory
+# Create app directory inside the container
 WORKDIR /usr/src/app
 
-# Copy package.json and install dependencies
-COPY package.json ./
+# Copy only package.json first to leverage Docker cache for dependencies
+COPY package.json package-lock.json* ./
+
+# Install production dependencies
 RUN npm install
 
-# Copy application files
+# Copy the rest of the application files
 COPY . .
 
-# Ensure logs directory exists inside the container
-RUN mkdir -p /usr/src/app/logs
+# Ensure the logs directory exists
+RUN mkdir -p logs
 
-# Allow setting the background color at build time
+# Allow setting the background color at runtime
 ARG COLOR=red
-ENV COLOR=${COLOR}
+ENV COLOR=$COLOR
 
-# Expose the application port
+# Document the port the app will run on
 EXPOSE 8080
 
-# Start the application
+# Start the app
 CMD ["node", "app.js"]

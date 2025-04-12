@@ -4,9 +4,57 @@
   "description": "A simple Node.js app to display colors",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js"
+    "start": "node app.js",
+    "test": "jest --verbose --coverage --detectOpenHandles --testTimeout=10000",
+    "test:watch": "jest --watch --verbose --detectOpenHandles --testTimeout=10000",
+    "test:ci": "jest --ci --runInBand --detectOpenHandles --testTimeout=10000",
+    "test:debug": "node --inspect-brk ./node_modules/jest/bin/jest.js --runInBand --verbose",
+    "lint": "eslint .",
+    "build": "echo 'Building application...'",
+    "prepare": "husky install"
   },
   "dependencies": {
     "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "@babel/core": "^7.22.1",
+    "@babel/preset-env": "^7.22.4",
+    "babel-jest": "^29.5.0",
+    "eslint": "^8.0.0",
+    "husky": "^8.0.0",
+    "jest": "^29.5.0",
+    "supertest": "^6.3.3",
+    "jest-html-reporter": "^3.6.0"
+  },
+  "babel": {
+    "presets": ["@babel/preset-env"]
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "setupFilesAfterEnv": ["./test/setup.js"],
+    "testTimeout": 10000,
+    "coverageReporters": [
+      "text",
+      "html",
+      "lcov"
+    ],
+    "reporters": [
+      "default",
+      [
+        "jest-html-reporter",
+        {
+          "pageTitle": "Color App Test Report",
+          "outputPath": "test-report.html",
+          "includeFailureMsg": true,
+          "includeConsoleLog": true
+        }
+      ]
+    ],
+    "collectCoverageFrom": [
+      "**/*.js",
+      "!**/node_modules/**",
+      "!**/test/**",
+      "!**/coverage/**"
+    ]
   }
 }

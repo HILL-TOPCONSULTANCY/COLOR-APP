@@ -1,75 +1,74 @@
 const express = require('express');
 const fs = require('fs');
 const path = require('path');
+const os = require('os');
 
-const app = express();
-const PORT = 8080;
+function createServer() {
+  const app = express();
+  const colorEnv = process.env.COLOR;
+  const backgroundColor = (colorEnv && isNaN(colorEnv)) ? colorEnv : 'red';
+  const logsDir = path.join(__dirname, 'logs');
 
-// Get the background color from an environment variable (default: red)
-const backgroundColor = process.env.COLOR || 'red';
-
-// Ensure logs directory exists
-const logsDir = path.join(__dirname, 'logs');
-if (!fs.existsSync(logsDir)) {
+  // Ensure logs directory exists
+  if (!fs.existsSync(logsDir)) {
     fs.mkdirSync(logsDir, { recursive: true });
+  }
+
+  const logFilePath = path.join(logsDir, 'app.log');
+  const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+
+  const logMessage = (message) => {
+    const timestamp = new Date().toISOString();
+    const formatted = `[${timestamp}] ${message}`;
+    console.log(formatted);
+    logStream.write(formatted + '\n');
+  };
+
+  // App startup logs
+  logMessage('🚀 Starting Color Display Application...');
+  logMessage(`🌐 Hostname: ${os.hostname()}`);
+  logMessage(`🎨 Color set to: ${backgroundColor}`);
+  logMessage(`📁 Serving HTML from: ${path.join(__dirname, 'index.html')}`);
+  logMessage(`📄 Logging to file: ${logFilePath}`);
+
+  // Route
+  app.get('/', (req, res) => {
+    const userAgent = req.headers['user-agent'] || 'Unknown';
+    const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
+    const method = req.method;
+    const url = req.originalUrl;
+
+    logMessage(`📥 Request: ${method} ${url} | IP: ${ip} | UA: ${userAgent}`);
+
+    const htmlPath = path.join(__dirname, 'index.html');
+    fs.readFile(htmlPath, 'utf8', (err, data) => {
+      if (err) {
+        const errorMsg = `❌ Error reading ${htmlPath}: ${err.message}`;
+        logMessage(errorMsg);
+        return res.status(500).send(errorMsg);
+      }
+
+      const output = data.replace(/{{COLOR}}/g, backgroundColor);
+      res.send(output);
+    });
+  });
+
+  return { app, logStream };
 }
 
-// Logging setup
-const logFilePath = path.join(logsDir, 'app.log');
-const logStream = fs.createWriteStream(logFilePath, { flags: 'a' });
+module.exports = { createServer };
 
-const serverInfo = `
-==========================
-Hilltop Consultancy Color Display Application
-Address: Sylen 3, Høje Taastrup, Copenhagen
-Website: www.htconsult.dk
-Contact: +45 7157 3047
-==========================
-`;
+// Run server if executed directly
+if (require.main === module) {
+  const { app } = createServer();
+  const PORT = process.env.PORT || 8080;
+  const server = app.listen(PORT, () => {
+    console.log(`✅ Server running at http://localhost:${PORT}`);
+  });
 
-console.log(serverInfo);
-logStream.write(serverInfo + '\n');
-
-// Serve index.html dynamically
-app.get('/', (req, res) => {
-    const timestamp = new Date().toISOString();
-    const userAgent = req.headers['user-agent'] || 'Unknown';
-    const remoteAddress = req.socket.remoteAddress;
-
-    // Read the HTML file
-    fs.readFile(path.join(__dirname, 'index.html'), 'utf8', (err, data) => {
-        if (err) {
-            res.status(500).send('Internal Server Error');
-            return;
-        }
-
-        // Replace placeholders with actual values
-        const htmlContent = data.replace(/{{COLOR}}/g, backgroundColor);
-        res.send(htmlContent);
+  process.on('SIGTERM', () => {
+    server.close(() => {
+      console.log('🛑 Server terminated gracefully');
     });
-
-    // Log request details
-    const logMessage = `
-[${timestamp}] New Request:
-- Client IP: ${remoteAddress}
-- User-Agent: ${userAgent}
-- Background Color: ${backgroundColor}
-- Accessed Page: /
-==========================
-`;
-    console.log(logMessage);
-    logStream.write(logMessage + '\n');
-});
-
-// Start the server
-app.listen(PORT, () => {
-    const startMessage = `
-[${new Date().toISOString()}] Server started:
-- Running on: http://localhost:${PORT}
-- Background Color: ${backgroundColor}
-- Hilltop Consultancy Contact: +45 7157 3047
-==========================
-`;
-    console.log(startMessage);
-    logStream.write(startMessage + '\n');
-});
+  });
+}
