@@ -14,7 +14,7 @@ To run the application manually, you will need to:
 5. SSH into the instance and install required tools:
 
 ```sh
-sudo apt update && sudo apt install -y git curl nodejs npm
+sudo yum update && sudo yum install -y git nodejs npm
 ```
 
 6. Clone the repo and run the app:
