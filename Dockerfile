@@ -17,11 +17,10 @@ COPY . .
 RUN mkdir -p logs
 
 # Allow setting the background color at runtime
-ARG COLOR=red
-ENV COLOR=$COLOR
+ARG COLOR=blue
 
 # Document the port the app will run on
-EXPOSE 8080
+EXPOSE 5050
 
 # Start the app
 CMD ["node", "app.js"]
