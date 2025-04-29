@@ -37,11 +37,6 @@ npm start
 COLOR=blue npm start
 ```
 
-10. To test and build:
-```sh
-npm test
-```
-
 Access via: `http://localhost:8080`
 
 ---
