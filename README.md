@@ -1,4 +1,3 @@
-```markdown
 # Color Display Application
 
 This is a simple Node.js web application that dynamically displays a webpage with a customizable background color. This document outlines how to run the application directly on a server without using Docker.
