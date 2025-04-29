@@ -61,7 +61,7 @@ module.exports = { createServer };
 // Run server if executed directly
 if (require.main === module) {
   const { app } = createServer();
-  const PORT = process.env.PORT || 8080;
+  const PORT = process.env.PORT || 5050;
   const server = app.listen(PORT, () => {
     console.log(`✅ Server running at http://localhost:${PORT}`);
   });
