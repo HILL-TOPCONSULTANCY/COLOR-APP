@@ -141,7 +141,7 @@ These steps outline how to run the Color Display Application using Docker on an 
     *   Run the Docker container with port mapping and environment variable:
 
         ```bash
-        docker run -d -p 8080:8080 -e COLOR=blue hilltopconsultancy/color-app:latest
+        docker run -d -p 8080:8080 -e COLOR=blue hilltopconsultancy/color-app:blue
         ```
 
         *   Replace `blue` with the desired color (e.g., `green`, `red`, `#FF0000`).
