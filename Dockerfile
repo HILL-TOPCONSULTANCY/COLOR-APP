@@ -20,7 +20,7 @@ RUN mkdir -p logs
 ARG COLOR=blue
 
 # Document the port the app will run on
-EXPOSE 5050
+EXPOSE 8080
 
 # Start the app
 CMD ["node", "app.js"]
