@@ -6,7 +6,7 @@ const os = require('os');
 function createServer() {
   const app = express();
   const colorEnv = process.env.COLOR;
-  const backgroundColor = (colorEnv && isNaN(colorEnv)) ? colorEnv : 'red';
+  const backgroundColor = colorEnv || 'blue'; // Default to blue if not set
   const logsDir = path.join(__dirname, 'logs');
 
   // Ensure logs directory exists
@@ -37,7 +37,6 @@ function createServer() {
     const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'Unknown';
     const method = req.method;
     const url = req.originalUrl;
-
     logMessage(`📥 Request: ${method} ${url} | IP: ${ip} | UA: ${userAgent}`);
 
     const htmlPath = path.join(__dirname, 'index.html');
@@ -47,7 +46,6 @@ function createServer() {
         logMessage(errorMsg);
         return res.status(500).send(errorMsg);
       }
-
       const output = data.replace(/{{COLOR}}/g, backgroundColor);
       res.send(output);
     });
