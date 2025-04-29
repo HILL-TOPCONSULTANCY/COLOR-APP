@@ -1,5 +1,5 @@
 # Use the official Node.js 16 LTS image
-FROM node:16
+FROM node:16-slim
 
 # Create app directory inside the container
 WORKDIR /usr/src/app
@@ -17,10 +17,13 @@ COPY . .
 RUN mkdir -p logs
 
 # Allow setting the background color at runtime
-ARG COLOR=blue
+ENV COLOR=blue
 
 # Document the port the app will run on
 EXPOSE 8080
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -f http://localhost:8080/ || exit 1
 
 # Start the app
 CMD ["node", "app.js"]
