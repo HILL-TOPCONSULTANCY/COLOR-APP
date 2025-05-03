@@ -18,6 +18,8 @@ RUN mkdir -p logs
 
 # Allow setting the background color at runtime
 ENV COLOR=blue
+ENV NAME=devops
+ENV COUNTRY=Denmark
 
 # Document the port the app will run on
 EXPOSE 8080
